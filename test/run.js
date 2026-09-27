@@ -57,6 +57,11 @@ async function main() {
         assert.ok(html.includes('Buy milk'), 'expected a to-do title in the panel')
         assert.ok(html.includes('<h2>Overdue</h2>'), 'expected the Overdue heading')
     })
+    await test('mobile: panel CSS is inlined so setHtml never flashes unstyled content', () => {
+        const html = mobile.panelHtml['panel-panel']
+        assert.ok(html.includes('.calendar-day-button'), 'expected the base panel CSS in the HTML')
+        assert.ok(!mobile.panelScripts.includes('/ui/panel/panel.css'), 'panel CSS should not load asynchronously')
+    })
     await test('mobile: to-do titles are html escaped', () => {
         const html = mobile.panelHtml['panel-panel']
         assert.ok(html.includes('Pay rent &amp; bills &lt;urgent&gt;'), 'title was not escaped')

@@ -4,7 +4,10 @@
  ***************************************************************************************************************************************************/
 
 export var panelTemplate = `
-    <style><<CUSTOM_CSS>></style>
+    <style>
+        <<PANEL_CSS>>
+        <<CUSTOM_CSS>>
+    </style>
     <section class="heading">
         <h1>Agenda</h1>
         <section class="heading-buttons"><<HEADING_BUTTONS>></section>
