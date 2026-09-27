@@ -17,22 +17,27 @@ let noDueDatesAtEndCheckbox = document.getElementById("noDueDatesAtEndCheckbox")
 let weekStartsOnSelect = document.getElementById("weekStartsOnSelect")
 let maxDotsPerDayInput = document.getElementById("maxDotsPerDayInput")
 
-// Connect Event Handlers
-nameInput.addEventListener("change", saveProfileData)
-sortOrderInput.addEventListener("change", saveProfileData)
-searchCriteriaInput.addEventListener("change", saveProfileData)
-noteIDInput.addEventListener("change", saveProfileData)
-showCompletedCheckbox.addEventListener("change", saveProfileData)
-showNoDueCheckbox.addEventListener("change", saveProfileData)
-displayFormatSelect.addEventListener("change", saveProfileData)
-yearFormatSelect.addEventListener("change", saveProfileData)
-monthFormatSelect.addEventListener("change", saveProfileData)
-dayFormatSelect.addEventListener("change", saveProfileData)
-weekdayFormatSelect.addEventListener("change", saveProfileData)
-timeIs12HourCheckbox.addEventListener("change", saveProfileData)
-noDueDatesAtEndCheckbox.addEventListener("change", saveProfileData)
-weekStartsOnSelect.addEventListener("change", saveProfileData)
-maxDotsPerDayInput.addEventListener("change", saveProfileData)
+// Keep the hidden form value current as soon as any control is edited. Waiting for
+// "change" requires a focused field to lose focus before Joplin's native Save button
+// collects the form, which can otherwise submit the previous value.
+const profileInputs = [
+    nameInput,
+    sortOrderInput,
+    searchCriteriaInput,
+    noteIDInput,
+    showCompletedCheckbox,
+    showNoDueCheckbox,
+    displayFormatSelect,
+    yearFormatSelect,
+    monthFormatSelect,
+    dayFormatSelect,
+    weekdayFormatSelect,
+    timeIs12HourCheckbox,
+    noDueDatesAtEndCheckbox,
+    weekStartsOnSelect,
+    maxDotsPerDayInput,
+]
+profileInputs.forEach(input => input.addEventListener("input", saveProfileData))
 
 // Load Profile Data
 function loadProfileData() {

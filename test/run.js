@@ -3,6 +3,7 @@ const os = require('os')
 const path = require('path')
 const fs = require('fs-extra')
 const sqlite3 = require('sqlite3')
+const vm = require('vm')
 const { run } = require('./harness')
 
 const todos = [
@@ -27,6 +28,48 @@ async function test(name, fn) {
 
 async function main() {
     const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'agenda-test-'))
+
+    await test('profile editor saves changes without requiring a focus change', async () => {
+        const elements = {}
+        const elementIDs = [
+            'nameInput', 'sortOrderInput', 'searchCriteriaInput', 'noteIDInput',
+            'showCompletedCheckbox', 'showNoDueCheckbox', 'displayFormatSelect',
+            'yearFormatSelect', 'monthFormatSelect', 'dayFormatSelect',
+            'weekdayFormatSelect', 'timeIs12HourCheckbox', 'profileDataInput',
+            'noDueDatesAtEndCheckbox', 'weekStartsOnSelect', 'maxDotsPerDayInput',
+        ]
+        for (const id of elementIDs) {
+            elements[id] = {
+                value: id === 'profileDataInput' ? '<<PROFILE_DATA>>' : '',
+                checked: false,
+                addEventListener(event, handler) { this[event] = handler },
+            }
+        }
+
+        const script = await fs.readFile(path.join(__dirname, '../src/ui/editor/editorWebview.js'), 'utf8')
+        vm.runInNewContext(script, {
+            document: { getElementById: id => elements[id] },
+            btoa: value => Buffer.from(value, 'binary').toString('base64'),
+            atob: value => Buffer.from(value, 'base64').toString('binary'),
+            encodeURI,
+            decodeURI,
+        })
+
+        elements.nameInput.value = 'Renamed Profile'
+        elements.nameInput.input()
+        let saved = JSON.parse(decodeURI(Buffer.from(elements.profileDataInput.value, 'base64').toString('binary')))
+        assert.strictEqual(saved.name, 'Renamed Profile')
+
+        elements.showCompletedCheckbox.checked = true
+        elements.showCompletedCheckbox.input()
+        saved = JSON.parse(decodeURI(Buffer.from(elements.profileDataInput.value, 'base64').toString('binary')))
+        assert.strictEqual(saved.showCompleted, true)
+
+        elements.displayFormatSelect.value = 'week'
+        elements.displayFormatSelect.input()
+        saved = JSON.parse(decodeURI(Buffer.from(elements.profileDataInput.value, 'base64').toString('binary')))
+        assert.strictEqual(saved.displayFormat, 'week')
+    })
 
     // ---------------------------------------------------------------- mobile
     const mobile = await run({
