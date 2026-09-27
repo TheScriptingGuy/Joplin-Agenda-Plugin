@@ -16,6 +16,10 @@ import { isMobile } from "../../core/platform";
 import { panelTemplate } from "./panelTemplate";
 import { iconButton } from "../icons";
 
+// Bundle the base stylesheet into the plugin code so every setHtml() call contains its styles
+// immediately. This avoids a flash of unstyled content while Android reloads an external CSS file.
+const panelCss = require('!!raw-loader?esModule=false!./panel.css')
+
 /** Variable Declaration ***************************************************************************************************************************/
 var panel = null;
 var lastRenderedHtml = null;
@@ -38,7 +42,6 @@ function resetCalendarViewState(){
 export async function setupPanel(){
     panel = await joplin.views.panels.create('panel')
     await joplin.views.panels.addScript(panel, '/ui/panel/panelWebview.js')
-    await joplin.views.panels.addScript(panel, '/ui/panel/panel.css')
     await joplin.views.panels.onMessage(panel, eventHandler)
 }
 
@@ -123,6 +126,7 @@ export async function togglePanelVisibility() {
     var profileControlsHtml = await getProfileControlsHTML(profileID)
     var customCss = sanitizeCss(await getCustomCss())
     var htmlString = panelTemplate
+        .replace("<<PANEL_CSS>>", () => sanitizeCss(panelCss))
         .replace("<<CUSTOM_CSS>>", () => customCss)
         .replace("<<HEADING_BUTTONS>>", () => headingButtonsHtml)
         .replace("<<PROFILE_CONTROLS>>", () => profileControlsHtml)
